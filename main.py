@@ -1,5 +1,6 @@
 import pygame as pg
 import random as rnd
+import sys
 
 class Tile(pg.sprite.Sprite):
     def __init__(self, value, x_pos, y_pos, size, padding, callback): # -1 is bomb, then we have 0-8
@@ -81,8 +82,9 @@ if __name__ == '__main__':
 
     tiles = pg.sprite.Group()
 
-    rows = 35
-    cols = 50
+    args = sys.argv
+    rows = int(args[1]) if len(args) > 1 else 30
+    cols = int(args[2]) if len(args) > 1 else 40
 
     tile_size = 16
     padding = 0
