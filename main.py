@@ -12,11 +12,9 @@ class Tile(pg.sprite.Sprite):
 
         self.image = pg.image.load('./images/unflipped-tile.png')
 
-        # x_pos and y_pos here refer to the grid coordinates, not pixel coordinates
         self.x_pos = x_pos
         self.y_pos = y_pos
 
-        # Calculate pixel position for the rect
         pixel_x = x_pos * (self.tile_size + self.padding)
         pixel_y = y_pos * (self.tile_size + self.padding)
         self.rect = pg.Rect(pixel_x, pixel_y, size, size)
@@ -53,9 +51,9 @@ def on_click(tile, fliporflag):
 def init_grid(rows, cols):
     grid = [[-1 if rnd.randint(0, 100) > 85 else 0 for _ in range(cols)] for _ in range(rows)]
 
-    for r_idx in range(rows): # Iterate through rows
-        for c_idx in range(cols): # Iterate through columns
-            if grid[r_idx][c_idx] != -1: # If it's not a bomb
+    for r_idx in range(rows):
+        for c_idx in range(cols):
+            if grid[r_idx][c_idx] != -1:
                 bomb_count = 0
                 neighbor_coords = get_neighbour_coords(grid, r_idx, c_idx)
                 for nr, nc in neighbor_coords:
