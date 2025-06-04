@@ -1,18 +1,19 @@
 import pygame as pg
 import random as rnd
+import os
 
 from happyface import HappyFace
 from tile import Tile
 
 class Game:
-    def __init__(self, rows, cols, path):
+    def __init__(self, rows, cols, image_dir_path):
         self.rows = rows
         self.cols = cols
         self.tile_size = 16
         self.padding = 0
         self.extra_height = 50
 
-        self.path = path
+        self.image_dir_path = image_dir_path # Store the image directory path
 
         self.width = self.cols * (self.tile_size + self.padding)
         self.height = self.rows * (self.tile_size + self.padding)
@@ -31,18 +32,22 @@ class Game:
         self.init_game_elements()
 
     def _load_tile_images(self):
-            image_names = ['unflipped', 'flagged', 'bomb', 'empty'] + [str(i) for i in range(1, 9)]
-            for name in image_names:
-                try:
-                    self.tile_images[name] = pg.image.load(f'{self.path}images/{name}-tile.png').convert_alpha()
-                except pg.error as e:
-                    print(f"Warning: Could not load image {name}-tile.png: {e}")
+                image_names = ['unflipped', 'flagged', 'bomb', 'empty'] + [str(i) for i in range(1, 9)]
+                for name in image_names:
+                    try:
+                        # Use os.path.join to correctly build the file path
+                        image_file_path = os.path.join(self.image_dir_path, f'{name}-tile.png')
+                        self.tile_images[name] = pg.image.load(image_file_path).convert_alpha()
+                    except pg.error as e:
+                        print(f"Warning: Could not load image {image_file_path}: {e}")
 
-            try:
-                self.happyface_image = pg.image.load(f'{self.path}images/happyface-tile.png').convert_alpha()
-            except pg.error as e:
-                print(f"Warning: Could not load happyface-tile.png: {e}")
-                self.happyface_image = None
+                try:
+                    # Use os.path.join for the happyface image as well
+                    happyface_file_path = os.path.join(self.image_dir_path, 'happyface-tile.png')
+                    self.happyface_image = pg.image.load(happyface_file_path).convert_alpha()
+                except pg.error as e:
+                    print(f"Warning: Could not load {happyface_file_path}: {e}")
+                    self.happyface_image = None
 
 
     def init_game_elements(self):

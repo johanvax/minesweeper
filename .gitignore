@@ -1,5 +1,6 @@
 .ropeproject
 __pycache__
-main.spec
-build
 dist
+build
+main.spec
+.DS_Store
