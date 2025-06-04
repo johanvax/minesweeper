@@ -1,14 +1,14 @@
 import pygame as pg
 
 class HappyFace(pg.sprite.Sprite):
-    def __init__(self, x_pos, y_pos, callback, path):
+    def __init__(self, x_pos, y_pos, callback, happyface_image):
         super().__init__()
 
         self.tile_size = 32
 
         self.callback = callback
 
-        self.image = pg.image.load(f'{path}images/happyface-tile.png')
+        self.image = happyface_image
 
         self.x_pos = x_pos
         self.y_pos = y_pos

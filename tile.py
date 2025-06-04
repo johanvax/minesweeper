@@ -1,16 +1,18 @@
 import pygame as pg
 
 class Tile(pg.sprite.Sprite):
-    def __init__(self, value, x_pos, y_pos, size, padding, callback, path): # -1 is bomb, then we have 0-8
+    # Modified __init__ to accept pre-loaded images
+    def __init__(self, value, x_pos, y_pos, size, padding, callback, tile_images):
         super().__init__()
 
         self.tile_size = size
         self.padding = padding
 
-        self.path = path
         self.callback = callback
 
-        self.image = pg.image.load(f'{path}images/unflipped-tile.png')
+        self.tile_images = tile_images
+
+        self.image = self.tile_images['unflipped']
 
         self.x_pos = x_pos
         self.y_pos = y_pos
@@ -29,5 +31,6 @@ class Tile(pg.sprite.Sprite):
                 if self.rect.collidepoint(event.pos):
                     if event.button == 1: # Left click
                         self.callback(self, True)
+
                     elif event.button == 3: # Right click
                         self.callback(self, False)

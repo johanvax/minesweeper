@@ -25,37 +25,60 @@ class Game:
         self.tiles = pg.sprite.Group()
         self.happy_faces = pg.sprite.Group()
 
+        self.tile_images = {}
+        self._load_tile_images() # Call this method to load images
+
         self.init_game_elements()
 
+    def _load_tile_images(self):
+            image_names = ['unflipped', 'flagged', 'bomb', 'empty'] + [str(i) for i in range(1, 9)]
+            for name in image_names:
+                try:
+                    self.tile_images[name] = pg.image.load(f'{self.path}images/{name}-tile.png').convert_alpha()
+                except pg.error as e:
+                    print(f"Warning: Could not load image {name}-tile.png: {e}")
+
+            try:
+                self.happyface_image = pg.image.load(f'{self.path}images/happyface-tile.png').convert_alpha()
+            except pg.error as e:
+                print(f"Warning: Could not load happyface-tile.png: {e}")
+                self.happyface_image = None
+
+
     def init_game_elements(self):
-        self.tiles.empty()
-        self.happy_faces.empty()
+            self.tiles.empty()
+            self.happy_faces.empty()
 
-        grid, bomb_count = self._init_grid(self.rows, self.cols)
+            grid, bomb_count = self._init_grid(self.rows, self.cols)
 
-        for r_idx in range(self.rows):
-            for c_idx in range(self.cols):
-                self.tiles.add(Tile(grid[r_idx][c_idx], c_idx, r_idx, self.tile_size, self.padding, self.on_click, self.path))
+            for r_idx in range(self.rows):
+                for c_idx in range(self.cols):
+                    self.tiles.add(Tile(grid[r_idx][c_idx], c_idx, r_idx, self.tile_size, self.padding, self.on_click, self.tile_images))
 
-        happy_pixel_x = (self.width // 2) - 16
-        happy_pixel_y = self.height + ((self.extra_height - 32) // 2)
+            happy_pixel_x = (self.width // 2) - 16
+            happy_pixel_y = self.height + ((self.extra_height - 32) // 2)
 
-
-        self.happy_faces.add(HappyFace(happy_pixel_x, happy_pixel_y, self.reset_game, self.path))
+            if self.happyface_image:
+                self.happy_faces.add(HappyFace(happy_pixel_x, happy_pixel_y, self.reset_game, self.happyface_image))
+            else:
+                print("HappyFace image not loaded, skipping happy face creation.")
 
     def on_click(self, tile, fliporflag):
         if fliporflag:
             if not tile.flagged and not tile.flipped:
                 tile.flipped = True
                 name = str(tile.value) if 0 < tile.value else ('bomb' if tile.value == -1 else 'empty')
-                tile.image = pg.image.load(f'{tile.path}images/{name}-tile.png')
+                # Use pre-loaded image
+                tile.image = self.tile_images.get(name, self.tile_images['unflipped']) # Fallback to unflipped if image not found
         else:
             if not tile.flipped:
                 tile.flagged = not tile.flagged
                 if tile.flagged:
-                    tile.image = pg.image.load(f'{tile.path}images/flagged-tile.png')
+                    # Use pre-loaded image
+                    tile.image = self.tile_images['flagged']
                 else:
-                    tile.image = pg.image.load(f'{tile.path}images/unflipped-tile.png')
+                    # Use pre-loaded image
+                    tile.image = self.tile_images['unflipped']
 
     def _init_grid(self, rows, cols):
         grid = [[-1 if rnd.randint(0, 100) > 85 else 0 for _ in range(cols)] for _ in range(rows)]
@@ -90,7 +113,12 @@ class Game:
 
     def run(self):
         running = True
+        clock = pg.time.Clock()
+        FPS = 60 # You can adjust this
+
         while running:
+            clock.tick(FPS)
+
             events = pg.event.get()
             for event in events:
                 if event.type == pg.QUIT:
@@ -103,7 +131,7 @@ class Game:
             self.tiles.update(events)
             self.happy_faces.update(events)
 
-            self.screen.fill((200, 200, 200)) # Light grey background
+            self.screen.fill((200, 200, 200))
 
             self.tiles.draw(self.screen)
             self.happy_faces.draw(self.screen)
