@@ -2,14 +2,21 @@
 
 Made in python by Johan just for fun when I should be studying...
 
-## How to play
+## If you download the release...
+
+1. Navigate to where the file is located
+2. Check for permissions: `ls -l | grep minesweeper-johan`. To make it work, the should be an `x` visible somewhere. If not...
+3. Add permission by doing `chmod +x minesweeper-johan`.
+4. Run with `./minesweeper-johan <rows> <cols>` from the terminal.
+
+## How to play by getting the source code
 
 ```
 # without command line arguments gets you a grid with dimensions 30x40
 python3 main.py
 
 # ...or you can specify row and col dim
-python3 main.py <row> <col> # <row> and <col> as positive ints
+python3 main.py <rows> <cols> # <rows> and <cols> as positive ints
 ```
 
 ```
