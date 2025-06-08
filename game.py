@@ -51,39 +51,83 @@ class Game:
 
 
     def init_game_elements(self):
-            self.tiles.empty()
-            self.happy_faces.empty()
+        self.tiles.empty()
+        self.happy_faces.empty()
+        self._tile_grid = [[None for _ in range(self.cols)] for _ in range(self.rows)]
 
-            grid, bomb_count = self._init_grid(self.rows, self.cols)
+        grid, bomb_count = self._init_grid(self.rows, self.cols)
 
-            for r_idx in range(self.rows):
-                for c_idx in range(self.cols):
-                    self.tiles.add(Tile(grid[r_idx][c_idx], c_idx, r_idx, self.tile_size, self.padding, self.on_click, self.tile_images))
+        for r_idx in range(self.rows):
+            for c_idx in range(self.cols):
+                tile = Tile(grid[r_idx][c_idx], c_idx, r_idx, self.tile_size, self.padding, self.on_click, self.tile_images)
+                self.tiles.add(tile)
+                self._tile_grid[r_idx][c_idx] = tile # Store tile in the 2D grid
 
-            happy_pixel_x = (self.width // 2) - 16
-            happy_pixel_y = self.height + ((self.extra_height - 32) // 2)
+        happy_pixel_x = (self.width // 2) - 16
+        happy_pixel_y = self.height + ((self.extra_height - 32) // 2)
 
-            if self.happyface_image:
-                self.happy_faces.add(HappyFace(happy_pixel_x, happy_pixel_y, self.reset_game, self.happyface_image))
-            else:
-                print("HappyFace image not loaded, skipping happy face creation.")
+        if self.happyface_image:
+            self.happy_faces.add(HappyFace(happy_pixel_x, happy_pixel_y, self.reset_game, self.happyface_image))
+        else:
+            print("HappyFace image not loaded, skipping happy face creation.")
 
     def on_click(self, tile, fliporflag):
         if fliporflag:
             if not tile.flagged and not tile.flipped:
                 tile.flipped = True
                 name = str(tile.value) if 0 < tile.value else ('bomb' if tile.value == -1 else 'empty')
-                # Use pre-loaded image
-                tile.image = self.tile_images.get(name, self.tile_images['unflipped']) # Fallback to unflipped if image not found
+                tile.image = self.tile_images.get(name, self.tile_images['unflipped'])
+
+                # If an empty tile is clicked, initiate the BFS
+                if tile.value == 0:
+                    self._reveal_empty_tiles(tile.y_pos, tile.x_pos)
         else:
             if not tile.flipped:
                 tile.flagged = not tile.flagged
                 if tile.flagged:
-                    # Use pre-loaded image
                     tile.image = self.tile_images['flagged']
                 else:
-                    # Use pre-loaded image
                     tile.image = self.tile_images['unflipped']
+
+    def _reveal_empty_tiles(self, start_row, start_col):
+        q = [(start_row, start_col)]
+        visited = set()
+
+        while q:
+            r, c = q.pop(0)
+
+            if (r, c) in visited:
+                continue
+            visited.add((r, c))
+
+            current_tile = self._tile_grid[r][c]
+
+            if current_tile.value == -1 or current_tile.flagged:
+                continue
+
+            if not current_tile.flipped:
+                current_tile.flipped = True
+                name = str(current_tile.value) if 0 < current_tile.value else 'empty'
+                current_tile.image = self.tile_images.get(name, self.tile_images['unflipped'])
+
+            # If the current tile is empty (value 0), add its unvisited and non-bomb neighbors to the queue
+            if current_tile.value == 0:
+                neighbor_coords = self._get_neighbour_coords_for_bfs(r, c)
+                for nr, nc in neighbor_coords:
+                    neighbor_tile = self._tile_grid[nr][nc]
+                    # Only add if not visited, not a bomb, and not flagged
+                    if (nr, nc) not in visited and neighbor_tile.value != -1 and not neighbor_tile.flagged:
+                        q.append((nr, nc))
+
+
+    def _get_neighbour_coords_for_bfs(self, r, c):
+        neighbor_coords = []
+        offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        for dr, dc in offsets:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < self.rows and 0 <= nc < self.cols:
+                neighbor_coords.append((nr, nc))
+        return neighbor_coords
 
     def _init_grid(self, rows, cols):
         grid = [[-1 if rnd.randint(0, 100) > 85 else 0 for _ in range(cols)] for _ in range(rows)]
