@@ -13,6 +13,6 @@ Examples:
 - `./minesweeper-johan 20 20 --hard` --> Starts up a game with 20x20 board with 25% bombs
 
 ### How to play
-- Right click to flip a tile
-- Left click to flag a tile
+- Left click to flip a tile
+- Right click to flag a tile
 - You win if you have flipped or flagged everything and not died :)
