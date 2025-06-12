@@ -4,3 +4,4 @@ dist
 build
 main.spec
 .DS_Store
+getbinary.sh
