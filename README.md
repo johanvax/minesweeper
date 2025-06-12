@@ -8,9 +8,9 @@ Provide arguments like this:
 - `<rows> <cols> <[--easy, --medium, --hard]>`
 
 Examples:
-- `./minesweeper-johan --easy` --> Starts up a game with standard board of 30x40 with 10% bombs
+- `./minesweeper-johan --easy` --> Starts up a game with standard board of 20x15 with 10% bombs
 - `./minesweeper-johan 20 20` --> Starts up a game with 20x20 board with 15% bombs
-- `./minesweeper-johan 20 20 --hard` --> Starts up a game with 20x20 board with 25% bombs
+- `./minesweeper-johan 20 20 --hard` --> Starts up a game with 20x20 board with 20% bombs
 
 ### How to play
 - Left click to flip a tile
