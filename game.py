@@ -14,7 +14,7 @@ class Game:
         self.padding = 0
         self.extra_height = 50
 
-        if difficulty == '--hard': self.bomb_percent = 25
+        if difficulty == '--hard': self.bomb_percent = 20
         if difficulty == '--medium': self.bomb_percent = 15
         if difficulty == '--easy': self.bomb_percent = 10
 
@@ -28,6 +28,7 @@ class Game:
         self.screen_height = self.height + self.extra_height
 
         self.bomb_count = 0
+        self.bomb_positions = []
 
         self.screen = pg.display.set_mode((self.screen_width, self.screen_height))
         pg.display.set_caption("Minesweeper")
@@ -45,7 +46,7 @@ class Game:
         self.init_game_elements()
 
     def _load_tile_images(self):
-        image_names = ['unflipped', 'flagged', 'bomb', 'empty'] + [str(i) for i in range(1, 9)]
+        image_names = ['unflipped', 'flagged', 'bomb', 'empty', 'explosion'] + [str(i) for i in range(1, 9)]
         for name in image_names:
             try:
                 # Use os.path.join to correctly build the file path
@@ -82,11 +83,16 @@ class Game:
 
         self.bomb_count = bomb_count
 
+        for r in range(self.rows):
+            for c in range(self.cols):
+                if grid[r][c] == -1:
+                    self.bomb_positions.append((r, c))
+
         for r_idx in range(self.rows):
             for c_idx in range(self.cols):
                 tile = Tile(grid[r_idx][c_idx], c_idx, r_idx, self.tile_size, self.padding, self.on_click, self.tile_images)
                 self.tiles.add(tile)
-                self._tile_grid[r_idx][c_idx] = tile # Store tile in the 2D grid
+                self._tile_grid[r_idx][c_idx] = tile
 
         happy_pixel_x = (self.width // 2) - 16
         happy_pixel_y = self.height + ((self.extra_height - 32) // 2)
@@ -110,7 +116,7 @@ class Game:
 
                 if name == 'bomb':
                     print('You lost...', f'Score: {self.bomb_count}')
-                    self.reset_game()
+                    self.reveal_all_bombs(clicked_bomb=(tile.y_pos, tile.x_pos))
 
                 if tile.value == 0:
                     self._reveal_empty_tiles(tile.y_pos, tile.x_pos)
@@ -159,7 +165,6 @@ class Game:
                 name = str(current_tile.value) if 0 < current_tile.value else 'empty'
                 current_tile.image = self.tile_images.get(name, self.tile_images['unflipped'])
 
-            # If the current tile is empty (value 0), add its unvisited and non-bomb neighbors to the queue
             if current_tile.value == 0:
                 neighbor_coords = self._get_neighbour_coords_for_bfs(r, c)
                 for nr, nc in neighbor_coords:
@@ -167,7 +172,6 @@ class Game:
                     # Only add if not visited, not a bomb, and not flagged
                     if (nr, nc) not in visited and neighbor_tile.value != -1 and not neighbor_tile.flagged:
                         q.append((nr, nc))
-
 
     def _get_neighbour_coords_for_bfs(self, r, c):
         neighbor_coords = []
@@ -209,10 +213,26 @@ class Game:
     def reset_game(self):
         self.init_game_elements()
 
+    def reveal_all_bombs(self, clicked_bomb):
+        for r_idx in range(self.rows):
+            for c_idx in range(self.cols):
+                tile = self._tile_grid[r_idx][c_idx]
+
+                if tile.value == -1:
+                    if not tile.flagged:
+                        tile.flipped = True
+                        if (r_idx, c_idx) == clicked_bomb:
+                            tile.image = self.tile_images.get('explosion', self.tile_images['bomb'])
+                        else:
+                            tile.image = self.tile_images.get('bomb', self.tile_images['unflipped'])
+                elif tile.flagged: # It's not a bomb, but it was flagged incorrectly
+                    tile.flipped = True # Treat as flipped to reveal the error
+                    tile.image = self.tile_images.get('wrong-bomb', self.tile_images['unflipped'])
+
     def run(self):
         running = True
         clock = pg.time.Clock()
-        FPS = 60 # You can adjust this
+        FPS = 60
 
         while running:
             clock.tick(FPS)

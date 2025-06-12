@@ -9,6 +9,9 @@ import pygame as pg
 if __name__ == '__main__':
     pg.init()
 
+    DEFAULT_ROWS = 20
+    DEFAULT_COLS = 15
+
     if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
     else:
@@ -24,8 +27,8 @@ if __name__ == '__main__':
                 print('Provide arguments like this:\n\t<[--easy, --medium, --hard]>, or\n\t<rows> <cols>, or\n\t<rows> <cols> <[--easy, --medium, --hard]>')
             else:
                 difficulty = args[1]
-                rows = 30
-                cols = 40
+                rows = DEFAULT_ROWS
+                cols = DEFAULT_COLS
         elif len(args) == 3:
             difficulty = '--medium'
             rows = int(args[1])
@@ -36,8 +39,8 @@ if __name__ == '__main__':
             cols = int(args[2])
         else:
             difficulty = '--medium'
-            rows = 30
-            cols = 40
+            rows = DEFAULT_ROWS
+            cols = DEFAULT_COLS
 
         image_path = os.path.join(base_path, 'images') + os.sep
 
