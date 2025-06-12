@@ -60,14 +60,6 @@ class Game:
             except pg.error as e:
                 print(f"Warning: Could not load image {image_file_path}: {e}")
 
-        try:
-            # Use os.path.join for the happyface image as well
-            happyface_file_path = os.path.join(self.image_dir_path, 'happyface-tile.png')
-            self.happyface_image = pg.image.load(happyface_file_path).convert_alpha()
-        except pg.error as e:
-            print(f"Warning: Could not load {happyface_file_path}: {e}")
-            self.happyface_image = None
-
     def _load_number_images(self):
         image_names = [str(i) for i in range(10)]
         for name in image_names:
