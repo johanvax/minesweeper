@@ -14,6 +14,8 @@ class Game:
         self.padding = 0
         self.extra_height = 50
 
+        self.tile_count = rows * cols
+
         if difficulty == '--hard': self.bomb_percent = 20
         if difficulty == '--medium': self.bomb_percent = 15
         if difficulty == '--easy': self.bomb_percent = 10
@@ -42,6 +44,9 @@ class Game:
 
         self.number_images = {}
         self._load_number_images()
+
+        self.smiley_images = {}
+        self._load_smiley_images()
 
         self.init_game_elements()
 
@@ -72,10 +77,21 @@ class Game:
             except pg.error as e:
                 print(f"Warning: Could not load image {image_file_path}: {e}")
 
+    def _load_smiley_images(self):
+        image_names = ['happyface', 'winface', 'looseface']
+        for name in image_names:
+            try:
+                image_file_path = os.path.join(self.image_dir_path, f'{name}-tile.png')
+                self.smiley_images[name] = pg.image.load(image_file_path).convert_alpha()
+            except pg.error as e:
+                print(f"Warning: Could not load image {image_file_path}: {e}")
+
     def init_game_elements(self):
         self.tiles.empty()
         self.happy_faces.empty()
         self.numbers.empty()
+
+        self.flippedorflagged = 0
 
         self._tile_grid = [[None for _ in range(self.cols)] for _ in range(self.rows)]
 
@@ -97,10 +113,7 @@ class Game:
         happy_pixel_x = (self.width // 2) - 16
         happy_pixel_y = self.height + ((self.extra_height - 32) // 2)
 
-        if self.happyface_image:
-            self.happy_faces.add(HappyFace(happy_pixel_x, happy_pixel_y, self.reset_game, self.happyface_image))
-        else:
-            print("HappyFace image not loaded, skipping happy face creation.")
+        self.happy_faces.add(HappyFace(happy_pixel_x, happy_pixel_y, self.reset_game, self.smiley_images['happyface']))
 
         number_pixel_x = 10
         number_pixel_y = self.height + ((self.extra_height - 32) // 2)
@@ -111,6 +124,7 @@ class Game:
         if fliporflag:
             if not tile.flagged and not tile.flipped:
                 tile.flipped = True
+                self.flippedorflagged += 1
                 name = str(tile.value) if 0 < tile.value else ('bomb' if tile.value == -1 else 'empty')
                 tile.image = self.tile_images.get(name, self.tile_images['unflipped'])
 
@@ -126,15 +140,20 @@ class Game:
                     tile.flagged = not tile.flagged
                     if tile.flagged:
                         tile.image = self.tile_images['flagged']
+                        self.flippedorflagged += 1
                         self.bomb_count -= 1
                     else:
                         tile.image = self.tile_images['unflipped']
+                        self.flippedorflagged -= 1
                         self.bomb_count += 1
                 else:
                     if tile.flagged:
                         tile.flagged = not tile.flagged
                         tile.image = self.tile_images['unflipped']
                         self.bomb_count += 1
+
+        if self.flippedorflagged == self.tile_count:
+            self.happy_faces.sprites()[0].image = self.smiley_images['winface']
 
     def update_numbers(self, new_val):
         digits = list(str(new_val))
@@ -162,6 +181,7 @@ class Game:
 
             if not current_tile.flipped:
                 current_tile.flipped = True
+                self.flippedorflagged += 1
                 name = str(current_tile.value) if 0 < current_tile.value else 'empty'
                 current_tile.image = self.tile_images.get(name, self.tile_images['unflipped'])
 
@@ -214,6 +234,7 @@ class Game:
         self.init_game_elements()
 
     def reveal_all_bombs(self, clicked_bomb):
+        self.happy_faces.sprites()[0].image = self.smiley_images['looseface']
         for r_idx in range(self.rows):
             for c_idx in range(self.cols):
                 tile = self._tile_grid[r_idx][c_idx]
