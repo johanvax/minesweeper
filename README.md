@@ -11,3 +11,8 @@ Examples:
 - `./minesweeper-johan --easy` --> Starts up a game with standard board of 30x40 with 10% bombs
 - `./minesweeper-johan 20 20` --> Starts up a game with 20x20 board with 15% bombs
 - `./minesweeper-johan 20 20 --hard` --> Starts up a game with 20x20 board with 25% bombs
+
+### How to play
+- Right click to flip a tile
+- Left click to flag a tile
+- You win if you have flipped or flagged everything and not died :)
